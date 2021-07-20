@@ -2,14 +2,17 @@
   "name": "ShowDragDistance",
   "title": "Show Drag Distance",
   "description": "Shows the distance you're dragging a token, similar to holding the ctrl key. Because 30 feet isn't as much as it sounds. Also removes the contraint of the normal ruler to hold CTRL and drag from Token. Now you can just press CTRL with token selected and it will show you the range from your token to mouse!",
-  "authors": [{"name":"Will Saunders","email":"willsaunders1014@gmail.com" }],
+  "authors": [
+    { "name": "Will Saunders", "email": "willsaunders1014@gmail.com" }
+  ],
   "version": "2.3.0",
   "minimumCoreVersion": "0.8.0",
-  "compatibleCoreVersion":"0.8.8",
-  "esmodules": [
-  	"showdragdistance.js"
-  ],
-  "dependencies":[
+  "compatibleCoreVersion": "0.8.8",
+  "esmodules": ["showdragdistance.js"],
+  "dependencies": [
+    {
+      "name": "lib-wrapper"
+    }
   ],
   "languages": [
     {
@@ -27,9 +30,9 @@
       "name": "Spanish",
       "path": "lang/es.json"
     }
-   ],
-  "changelog":"https://raw.githubusercontent.com/wsaunders1014/ShowDragDistance/master/README.md",
-  "url":"https://github.com/wsaunders1014/ShowDragDistance",
-  "manifest":"https://raw.githubusercontent.com/wsaunders1014/ShowDragDistance/master/module.json",
-  "download":"https://github.com/wsaunders1014/ShowDragDistance/releases/download/2.2.3/ShowDragDistance.zip"
+  ],
+  "changelog": "https://raw.githubusercontent.com/wsaunders1014/ShowDragDistance/master/README.md",
+  "url": "https://github.com/wsaunders1014/ShowDragDistance",
+  "manifest": "https://raw.githubusercontent.com/wsaunders1014/ShowDragDistance/master/module.json",
+  "download": "https://github.com/wsaunders1014/ShowDragDistance/releases/download/2.2.3/ShowDragDistance.zip"
 }

@@ -1,11 +1,7 @@
-(function () {
-  // import { PathManager } from "/modules/lib-find-the-path/scripts/pathManager.js";
-  // import { MinkowskiParameter,PointFactory,Segment } from "/modules/lib-find-the-path/scripts/point.js";
-  // import {FTPUtility} from "/modules/lib-find-the-path/scripts/utility.js";
-
-  const VTT_MODULE_NAME = "ShowDragDistance";
-  const VTT_MODULE_CLASS = "DragRuler";
-  const LOG_PREFIX = "ShowDragDistance | ";
+(function() {
+  const VTT_MODULE_NAME = 'ShowDragDistance';
+  const VTT_MODULE_CLASS = 'DragRuler';
+  const LOG_PREFIX = 'ShowDragDistance | ';
 
   let showDragDistance = true;
   let handleDragCancel;
@@ -13,9 +9,10 @@
   let ctrlPressed = false;
   let altPressed = false;
   let dragShift = false;
-  const TokenSpeedAttributes = { base: "", bonus: "" };
+  const TokenSpeedAttributes = {base: '', bonus: ''};
+
   class DragRuler extends Ruler {
-    constructor(user, { color = null } = {}) {
+    constructor(user, {color = null} = {}) {
       super();
       this.user = user;
       this.dragRuler = this.addChild(new PIXI.Graphics());
@@ -23,9 +20,10 @@
       this.tokenSpeed = null;
       this.name = `${VTT_MODULE_CLASS}.${user.id}`;
       this.color = color || colorStringToHex(this.user.data.color) || 0x42f4e2;
-      this.tokenSpeed = { normal: null, bonus: null };
+      this.tokenSpeed = {normal: null, bonus: null};
       canvas.grid.addHighlightLayer(this.name);
     }
+
     clear() {
       this._state = Ruler.STATES.INACTIVE;
       this.waypoints = [];
@@ -33,56 +31,60 @@
       this.labels.removeChildren().forEach((c) => c.destroy());
       canvas.grid.clearHighlightLayer(this.name);
     }
+
     _onDragStart(event) {
       this.clear();
       this._state = Ruler.STATES.STARTING;
       this._addWaypoint(event.data.origin);
       this.tokenSpeed = this.getTokenSpeed(this.getToken);
     }
+
     getTokenSpeed(token) {
       const baseSpeed = parseFloat(
-        getProperty(token, TokenSpeedAttributes.base)
+          getProperty(token, TokenSpeedAttributes.base)
       );
 
       const bonusSpeed =
-        TokenSpeedAttributes.bonus != "" &&
-        getProperty(token, TokenSpeedAttributes.bonus) != ""
-          ? parseFloat(getProperty(token, TokenSpeedAttributes.bonus))
-          : 0;
-      let flaggedSpeed = { normal: 0, dash: 0 };
+          TokenSpeedAttributes.bonus != '' &&
+          getProperty(token, TokenSpeedAttributes.bonus) != ''
+              ? parseFloat(getProperty(token, TokenSpeedAttributes.bonus))
+              : 0;
+      let flaggedSpeed = {normal: 0, dash: 0};
       Object.assign(
-        flaggedSpeed,
-        token.document.getFlag(VTT_MODULE_NAME, "speed") || {}
+          flaggedSpeed,
+          token.document.getFlag(VTT_MODULE_NAME, 'speed') || {}
       );
       const normalSpeed = baseSpeed + flaggedSpeed.normal;
       const dashSpeed =
-        (normalSpeed + flaggedSpeed.dash) *
-        game.settings.get(VTT_MODULE_NAME, "dashX");
+          (normalSpeed + flaggedSpeed.dash) *
+          game.settings.get(VTT_MODULE_NAME, 'dashX');
 
-      return { normal: normalSpeed, dash: dashSpeed };
+      return {normal: normalSpeed, dash: dashSpeed};
     }
+
     _onMouseUp(event) {
       this._endMeasurement();
     }
+
     _onMouseMove(event) {
       if (this._state === Ruler.STATES.MOVING) return;
 
       // Extract event data
       const mt = event._measureTime || 0;
       const ld = event._lastDest || event.data.origin;
-      const { origin, destination, originalEvent } = event.data;
+      const {origin, destination, originalEvent} = event.data;
 
       // Check measurement distance
       let dx = destination.x - origin.x,
-        dy = destination.y - origin.y;
+          dy = destination.y - origin.y;
 
       let [lastX, lastY] = canvas.grid.grid.getGridPositionFromPixels(
-        ld.x,
-        ld.y
+          ld.x,
+          ld.y
       );
       let [x, y] = canvas.grid.grid.getGridPositionFromPixels(
-        destination.x,
-        destination.y
+          destination.x,
+          destination.y
       );
 
       // Hide any existing Token HUD
@@ -93,17 +95,18 @@
       if (lastX != x || lastY != y || dragShift) {
         if (Date.now() - mt > 50) {
           //if(Math.abs(dx) > canvas.dimensions.size/2 || Math.abs(dy) > canvas.dimensions.size/2){
-          this.measure(destination, { gridSpaces: !originalEvent.shiftKey });
+          this.measure(destination, {gridSpaces: !originalEvent.shiftKey});
           event._measureTime = Date.now();
           event._lastDest = destination;
           this._state = Ruler.STATES.MEASURING;
         }
       }
     }
-    async measure(destination, { gridSpaces = true } = {}) {
+
+    async measure(destination, {gridSpaces = true} = {}) {
       if (!dragShift)
         destination = new PIXI.Point(
-          ...canvas.grid.getCenter(destination.x, destination.y)
+            ...canvas.grid.getCenter(destination.x, destination.y)
         );
       //else
 
@@ -122,7 +125,7 @@
           if (label) label.visible = false;
           continue;
         }
-        segments.push({ ray, label });
+        segments.push({ray, label});
       }
       // Clear the grid highlight layer
       const hlt = canvas.grid.highlightLayers[this.name];
@@ -136,21 +139,22 @@
 
       for (let i = 0; i < segments.length; i++) {
         let s = segments[i];
-        let { ray, label, last } = s;
+        let {ray, label, last} = s;
 
         let line;
         let ignoreTerrain =
-          typeof this.getToken.ignoreTerrain != "undefined"
-            ? this.getToken.ignoreTerrain
-            : false;
+            typeof this.getToken.ignoreTerrain != 'undefined' &&
+            this.getToken.ignoreTerrain != null
+                ? this.getToken.ignoreTerrain
+                : false;
         if (canvas.grid.type > 1) {
           let grid0 = canvas.grid.grid.getGridPositionFromPixels(
-            s.ray.A.x,
-            s.ray.A.y
+              s.ray.A.x,
+              s.ray.A.y
           );
           let grid1 = canvas.grid.grid.getGridPositionFromPixels(
-            s.ray.B.x,
-            s.ray.B.y
+              s.ray.B.x,
+              s.ray.B.y
           );
 
           let hex0 = canvas.grid.grid.offsetToCube(grid0[0], grid0[1]);
@@ -161,20 +165,20 @@
           line = hex0.linedraw(hex1, totalDistance, ignoreTerrain);
         } else if (canvas.grid.type == 1) {
           let p0 = canvas.grid.grid.getGridPositionFromPixels(
-            s.ray.A.x,
-            s.ray.A.y
+              s.ray.A.x,
+              s.ray.A.y
           );
           let p1 = canvas.grid.grid.getGridPositionFromPixels(
-            s.ray.B.x,
-            s.ray.B.y
+              s.ray.B.x,
+              s.ray.B.y
           );
 
           line = grid_line(
-            { row: p0[0], col: p0[1] },
-            { row: p1[0], col: p1[1] },
-            totalDistance,
-            nDiagonals,
-            ignoreTerrain
+              {row: p0[0], col: p0[1]},
+              {row: p1[0], col: p1[1]},
+              totalDistance,
+              nDiagonals,
+              ignoreTerrain
           );
         }
 
@@ -187,11 +191,11 @@
         s.text = this._getSegmentLabel(s.distance, totalDistance, s.last);
         // Draw line segment
         r.lineStyle(6, 0x000000, 0.5)
-          .moveTo(s.ray.A.x, s.ray.A.y)
-          .lineTo(s.ray.B.x, s.ray.B.y)
-          .lineStyle(4, this.color, 0.25)
-          .moveTo(s.ray.A.x, s.ray.A.y)
-          .lineTo(s.ray.B.x, s.ray.B.y);
+            .moveTo(s.ray.A.x, s.ray.A.y)
+            .lineTo(s.ray.B.x, s.ray.B.y)
+            .lineStyle(4, this.color, 0.25)
+            .moveTo(s.ray.A.x, s.ray.A.y)
+            .lineTo(s.ray.B.x, s.ray.B.y);
         // Draw the distance label just after the endpoint of the segment
         if (label) {
           label.text = s.text;
@@ -205,11 +209,12 @@
       }
       for (let p of waypoints) {
         r.lineStyle(2, 0x000000, 0.5)
-          .beginFill(this.color, 0.25)
-          .drawCircle(p.x, p.y, 8);
+            .beginFill(this.color, 0.25)
+            .drawCircle(p.x, p.y, 8);
       }
       return segments;
     }
+
     _getMovementToken() {
       let [x0, y0] = Object.values(this.waypoints[0]);
       const tokens = new Set(canvas.tokens.controlled);
@@ -227,41 +232,42 @@
 
       return x;
     }
+
     _highlightMeasurement(line) {
       let remainingSpeed =
-        this.tokenSpeed.normal != null ? this.tokenSpeed.normal : null;
+          this.tokenSpeed.normal != null ? this.tokenSpeed.normal : null;
       let dashSpeed =
-        this.tokenSpeed.dash !== null ? this.tokenSpeed.dash : null;
+          this.tokenSpeed.dash !== null ? this.tokenSpeed.dash : null;
       let maxSpeed = remainingSpeed;
       let color = this.color;
 
       for (let i = 0; i < line.length; i++) {
         if (line[i].travelled > remainingSpeed) {
           if (
-            game.settings.get(VTT_MODULE_NAME, "dash") &&
-            line[i].travelled < remainingSpeed + maxSpeed
+              game.settings.get(VTT_MODULE_NAME, 'dash') &&
+              line[i].travelled < remainingSpeed + maxSpeed
           ) {
             color = colorStringToHex(
-              game.settings.get(VTT_MODULE_NAME, "dashSpeedColor")
+                game.settings.get(VTT_MODULE_NAME, 'dashSpeedColor')
             );
           } else if (
-            game.settings.get(VTT_MODULE_NAME, "dash") == false ||
-            line[i].travelled > remainingSpeed + maxSpeed
+              game.settings.get(VTT_MODULE_NAME, 'dash') == false ||
+              line[i].travelled > remainingSpeed + maxSpeed
           ) {
             color = colorStringToHex(
-              game.settings.get(VTT_MODULE_NAME, "maxSpeedColor")
+                game.settings.get(VTT_MODULE_NAME, 'maxSpeedColor')
             );
           }
         }
 
         let [xgh, ygh] = canvas.grid.grid.getPixelsFromGridPosition(
-          line[i].row,
-          line[i].col
+            line[i].row,
+            line[i].col
         );
         canvas.grid.highlightPosition(this.name, {
           x: xgh,
           y: ygh,
-          color: color,
+          color: color
         });
       }
     }
@@ -269,12 +275,13 @@
     _addWaypoint(point) {
       //const center = canvas.grid.getCenter(point.x, point.y);
       this.waypoints.push(new PIXI.Point(point.x, point.y));
-      this.labels.addChild(new PIXI.Text("", CONFIG.canvasTextStyle));
+      this.labels.addChild(new PIXI.Text('', CONFIG.canvasTextStyle));
     }
+
     async moveToken(dragShift = false) {
       let wasPaused = game.paused;
       if (wasPaused && !game.user.isGM) {
-        ui.notifications.warn(game.i18n.localize("GAME.PausedWarning"));
+        ui.notifications.warn(game.i18n.localize('GAME.PausedWarning'));
         return false;
       }
       if (!this.visible || !this.destination) return false;
@@ -308,7 +315,7 @@
 
       if (hasCollision && !game.user.isGM) {
         this._endMeasurement();
-        ui.notifications.error(game.i18n.localize("ERROR.TokenCollide"));
+        ui.notifications.error(game.i18n.localize('ERROR.TokenCollide'));
         return;
       }
 
@@ -325,19 +332,20 @@
         else dest = [r.B.x, r.B.y];
 
         const path = new Ray(
-          { x: token.x, y: token.y },
-          { x: dest[0] + dx, y: dest[1] + dy }
+            {x: token.x, y: token.y},
+            {x: dest[0] + dx, y: dest[1] + dy}
         );
 
         await token.document.update(path.B);
         await token.animateMovement(path);
       }
-      Hooks.call(VTT_MODULE_CLASS + ".moveToken", token, this);
+      Hooks.call(VTT_MODULE_CLASS + '.moveToken', token, this);
       token._noAnimate = false;
 
       // Once all animations are complete we can clear the ruler
       this._endMeasurement();
     }
+
     toJSON() {
       return {
         class: VTT_MODULE_CLASS,
@@ -345,29 +353,31 @@
         waypoints: this.waypoints,
         destination: this.destination,
         _state: this._state,
-        speed: this.tokenSpeed,
+        speed: this.tokenSpeed
       };
     }
+
     _endMeasurement() {
       this.clear();
-      game.user.broadcastActivity({ dragruler: null });
+      game.user.broadcastActivity({dragruler: null});
       canvas.mouseInteractionManager.state =
-        MouseInteractionManager.INTERACTION_STATES.HOVER;
+          MouseInteractionManager.INTERACTION_STATES.HOVER;
     }
 
     /* -------------------------------------------- */
     get getToken() {
       return canvas.tokens.controlled.length > 0
-        ? canvas.tokens.controlled[0]
-        : null;
+          ? canvas.tokens.controlled[0]
+          : null;
     }
+
     /**
      * Update a Ruler instance using data provided through the cursor activity socket
      * @param {Object} data   Ruler data with which to update the display
      */
     update(data) {
       if (data.class !== VTT_MODULE_CLASS)
-        throw new Error("Unable to recreate Ruler instance from provided data");
+        throw new Error('Unable to recreate Ruler instance from provided data');
 
       // Populate data
       this.waypoints = data.waypoints;
@@ -376,107 +386,109 @@
       this.tokenSpeed = data.speed;
       // Ensure labels are created
       for (
-        let i = 0;
-        i < this.waypoints.length - this.labels.children.length;
-        i++
+          let i = 0;
+          i < this.waypoints.length - this.labels.children.length;
+          i++
       ) {
-        this.labels.addChild(new PIXI.Text("", CONFIG.canvasTextStyle));
+        this.labels.addChild(new PIXI.Text('', CONFIG.canvasTextStyle));
       }
 
       // Measure current distance
       if (data.destination) this.measure(data.destination, {});
     }
+
     static patchFunction(func, line_number, line, new_line) {
       let funcStr = func.toString();
-      let lines = funcStr.split("\n");
+      let lines = funcStr.split('\n');
       if (lines[line_number].trim() == line.trim()) {
         let fixed = funcStr.replace(line, new_line);
-        return Function('"use strict";return (function ' + fixed + ")")();
+        return Function('"use strict";return (function ' + fixed + ')')();
       }
       return func;
     }
+
     static init() {
       // CONFIG.debug.hooks = true;
       // CONFIG.debug.mouseInteraction = true;
-      game.settings.register(VTT_MODULE_NAME, "enabled", {
-        name: "ShowDragDistance.enable-s",
-        hint: "ShowDragDistance.enable-l",
-        scope: "client",
+      game.settings.register(VTT_MODULE_NAME, 'enabled', {
+        name: 'ShowDragDistance.enable-s',
+        hint: 'ShowDragDistance.enable-l',
+        scope: 'client',
         config: true,
         default: true,
-        type: Boolean,
+        type: Boolean
         //onChange: x => window.location.reload()
       });
-      game.settings.register(VTT_MODULE_NAME, "rangeFinder", {
-        name: "ShowDragDistance.rangeFinder-s",
-        hint: "ShowDragDistance.rangeFinder-l",
-        scope: "client",
+      game.settings.register(VTT_MODULE_NAME, 'rangeFinder', {
+        name: 'ShowDragDistance.rangeFinder-s',
+        hint: 'ShowDragDistance.rangeFinder-l',
+        scope: 'client',
         config: true,
         default: true,
-        type: Boolean,
+        type: Boolean
         // onChange: x => window.location.reload()
       });
-      game.settings.register(VTT_MODULE_NAME, "baseSpeedAttr", {
-        name: "ShowDragDistance.baseSpeedAttr-s",
-        hint: "ShowDragDistance.baseSpeedAttr-l",
-        scope: "world",
+      game.settings.register(VTT_MODULE_NAME, 'baseSpeedAttr', {
+        name: 'ShowDragDistance.baseSpeedAttr-s',
+        hint: 'ShowDragDistance.baseSpeedAttr-l',
+        scope: 'world',
         config: true,
-        default: "actor.data.data.attributes.movement.walk",
+        default: 'actor.data.data.attributes.movement.walk',
         type: String,
-        onChange: (x) => window.location.reload(),
+        onChange: (x) => window.location.reload()
       });
-      game.settings.register(VTT_MODULE_NAME, "bonusSpeedAttr", {
-        name: "ShowDragDistance.bonusSpeedAttr-s",
-        hint: "ShowDragDistance.bonusSpeedAttr-l",
-        scope: "world",
+      game.settings.register(VTT_MODULE_NAME, 'bonusSpeedAttr', {
+        name: 'ShowDragDistance.bonusSpeedAttr-s',
+        hint: 'ShowDragDistance.bonusSpeedAttr-l',
+        scope: 'world',
         config: true,
-        default: "",
+        default: '',
         type: String,
-        onChange: (x) => window.location.reload(),
+        onChange: (x) => window.location.reload()
       });
-      game.settings.register(VTT_MODULE_NAME, "maxSpeed", {
-        name: "ShowDragDistance.maxSpeed-s",
-        hint: "ShowDragDistance.maxSpeed-l",
-        scope: "world",
+      game.settings.register(VTT_MODULE_NAME, 'maxSpeed', {
+        name: 'ShowDragDistance.maxSpeed-s',
+        hint: 'ShowDragDistance.maxSpeed-l',
+        scope: 'world',
         config: true,
         default: true,
-        type: Boolean,
+        type: Boolean
         //onChange: x => window.location.reload()
       });
-      game.settings.register(VTT_MODULE_NAME, "maxSpeedColor", {
-        name: "ShowDragDistance.maxSpeedColor-s",
-        hint: "ShowDragDistance.maxSpeedColor-l",
-        scope: "client",
+      game.settings.register(VTT_MODULE_NAME, 'maxSpeedColor', {
+        name: 'ShowDragDistance.maxSpeedColor-s',
+        hint: 'ShowDragDistance.maxSpeedColor-l',
+        scope: 'client',
         config: true,
-        default: "#FF0000",
-        type: String,
+        default: '#FF0000',
+        type: String
         //onChange: x => window.location.reload()
       });
-      game.settings.register(VTT_MODULE_NAME, "dash", {
-        name: "ShowDragDistance.dash-s",
-        hint: "ShowDragDistance.dash-l",
-        scope: "world",
+      game.settings.register(VTT_MODULE_NAME, 'dash', {
+        name: 'ShowDragDistance.dash-s',
+        hint: 'ShowDragDistance.dash-l',
+        scope: 'world',
         config: true,
         default: true,
-        type: Boolean,
+        type: Boolean
         //onChange: x => window.location.reload()
       });
-      game.settings.register(VTT_MODULE_NAME, "dashX", {
-        name: "ShowDragDistance.dashX-s",
-        hint: "ShowDragDistance.dashX-l",
-        scope: "world",
+      game.settings.register(VTT_MODULE_NAME, 'dashX', {
+        name: 'ShowDragDistance.dashX-s',
+        hint: 'ShowDragDistance.dashX-l',
+        scope: 'world',
         config: true,
         default: 1,
-        type: Number,
+        type: Number
         //onChange: x => window.location.reload()
       });
-      game.settings.register(VTT_MODULE_NAME, "dashSpeedColor", {
-        name: "ShowDragDistance.dashSpeedColor-s",
-        hint: "ShowDragDistance.dashSpeedColor-l",
-        scope: "client",
+      game.settings.register(VTT_MODULE_NAME, 'dashSpeedColor', {
+        name: 'ShowDragDistance.dashSpeedColor-s',
+        hint: 'ShowDragDistance.dashSpeedColor-l',
+        scope: 'client',
         config: true,
-        default: "#00FF00",
-        type: String,
+        default: '#00FF00',
+        type: String
         //onChange: x => window.location.reload()
       });
       // game.settings.register(VTT_MODULE_NAME, 'showPathDefault', {
@@ -489,43 +501,43 @@
       //   // onChange: x => window.location.reload()
       //  });
       TokenSpeedAttributes.base = game.settings.get(
-        VTT_MODULE_NAME,
-        "baseSpeedAttr"
+          VTT_MODULE_NAME,
+          'baseSpeedAttr'
       );
       TokenSpeedAttributes.bonus =
-        game.settings.get(VTT_MODULE_NAME, "bonusSpeedAttr") !== ""
-          ? game.settings.get(VTT_MODULE_NAME, "bonusSpeedAttr")
-          : "";
+          game.settings.get(VTT_MODULE_NAME, 'bonusSpeedAttr') !== ''
+              ? game.settings.get(VTT_MODULE_NAME, 'bonusSpeedAttr')
+              : '';
 
       libWrapper.register(
-        VTT_MODULE_NAME,
-        "Users._handleUserActivity",
-        function (wrapped, userId, activityData = {}) {
-          let user2 = game.users.get(userId);
-          let active2 = "active" in activityData ? activityData.active : true;
-          // DragRuler measurement
-          if (active2 === false || user2.viewedScene !== canvas.scene.id) {
-            canvas.controls.updateDragRuler(user2, null);
-          }
-          if ("dragruler" in activityData) {
-            canvas.controls.updateDragRuler(user2, activityData.dragruler);
-          }
-          wrapped(userId, activityData);
-        },
-        "WRAPPER"
+          VTT_MODULE_NAME,
+          'Users._handleUserActivity',
+          function(wrapped, userId, activityData = {}) {
+            let user2 = game.users.get(userId);
+            let active2 = 'active' in activityData ? activityData.active : true;
+            // DragRuler measurement
+            if (active2 === false || user2.viewedScene !== canvas.scene.id) {
+              canvas.controls.updateDragRuler(user2, null);
+            }
+            if ('dragruler' in activityData) {
+              canvas.controls.updateDragRuler(user2, activityData.dragruler);
+            }
+            wrapped(userId, activityData);
+          },
+          'WRAPPER'
       );
 
-      ControlsLayer.prototype.drawDragRulers = function () {
+      ControlsLayer.prototype.drawDragRulers = function() {
         this.dragRulers = this.addChild(new PIXI.Container());
         for (let u of game.users.contents) {
           let dragRuler = new DragRuler(u);
           this._dragRulers[u.id] = this.dragRulers.addChild(dragRuler);
         }
       };
-      ControlsLayer.prototype.getDragRulerForUser = function (userId) {
+      ControlsLayer.prototype.getDragRulerForUser = function(userId) {
         return this._dragRulers[userId] || null;
       };
-      ControlsLayer.prototype.updateDragRuler = function (user, dragRulerData) {
+      ControlsLayer.prototype.updateDragRuler = function(user, dragRulerData) {
         if (user === game.user) return;
         // Update the Ruler display for the user
         let dragRuler = this.getDragRulerForUser(user.id);
@@ -535,198 +547,198 @@
       };
 
       libWrapper.register(
-        VTT_MODULE_NAME,
-        "Token.prototype._onDragLeftStart",
-        function (wrapped, event) {
-          if (
-            game.settings.get(VTT_MODULE_NAME, "enabled") === true &&
-            typeof this.data.flags["pick-up-stix"] == "undefined" &&
-            canvas.tokens.controlled.length == 1
-          ) {
-            event.data.origin = {
-              x: this.x + canvas.dimensions.size / 2,
-              y: this.y + canvas.dimensions.size / 2,
-            };
-            //event.data.origin = this.center;
-            canvas.controls.dragRuler._onDragStart(event);
-          }
-          return wrapped.apply(this, [event]);
-        },
-        "WRAPPER"
-      );
-
-      libWrapper.register(
-        VTT_MODULE_NAME,
-        "Token.prototype._onDragLeftMove",
-        function (wrapped, event) {
-          if (
-            canvas.controls.dragRuler.active &&
-            typeof this.data.flags["pick-up-stix"] == "undefined"
-          ) {
-            canvas.controls.dragRuler._onMouseMove(event, this);
-
-            if (!this.data.hidden && game.user.isGM && altPressed) {
-              const dragruler =
-                canvas.controls.dragRuler._state > 0
-                  ? canvas.controls.dragRuler.toJSON()
-                  : null;
-              game.user.broadcastActivity({ dragruler: dragruler });
-            } else if (!game.user.isGM) {
-              const dragruler =
-                canvas.controls.dragRuler._state > 0
-                  ? canvas.controls.dragRuler.toJSON()
-                  : null;
-              game.user.broadcastActivity({ dragruler: dragruler });
+          VTT_MODULE_NAME,
+          'Token.prototype._onDragLeftStart',
+          function(wrapped, event) {
+            if (
+                game.settings.get(VTT_MODULE_NAME, 'enabled') === true &&
+                typeof this.data.flags['pick-up-stix'] == 'undefined' &&
+                canvas.tokens.controlled.length == 1
+            ) {
+              event.data.origin = {
+                x: this.x + canvas.dimensions.size / 2,
+                y: this.y + canvas.dimensions.size / 2
+              };
+              //event.data.origin = this.center;
+              canvas.controls.dragRuler._onDragStart(event);
             }
-          }
-
-          return wrapped.apply(canvas.tokens.controlled[0], [event]);
-        },
-        "WRAPPER"
+            return wrapped.apply(this, [event]);
+          },
+          'WRAPPER'
       );
 
       libWrapper.register(
-        VTT_MODULE_NAME,
-        "Token.prototype._onDragLeftDrop",
-        function (wrapped, event) {
-          if (
-            game.settings.get(VTT_MODULE_NAME, "enabled") &&
-            canvas.controls.dragRuler.active
-          ) {
-            for (let c of this.layer.preview.children) {
-              const o = c._original;
-              if (o) {
-                o.data.locked = false;
-                o.alpha = 1.0;
+          VTT_MODULE_NAME,
+          'Token.prototype._onDragLeftMove',
+          function(wrapped, event) {
+            if (
+                canvas.controls.dragRuler.active &&
+                typeof this.data.flags['pick-up-stix'] == 'undefined'
+            ) {
+              canvas.controls.dragRuler._onMouseMove(event, this);
+
+              if (!this.data.hidden && game.user.isGM && altPressed) {
+                const dragruler =
+                    canvas.controls.dragRuler._state > 0
+                        ? canvas.controls.dragRuler.toJSON()
+                        : null;
+                game.user.broadcastActivity({dragruler: dragruler});
+              } else if (!game.user.isGM) {
+                const dragruler =
+                    canvas.controls.dragRuler._state > 0
+                        ? canvas.controls.dragRuler.toJSON()
+                        : null;
+                game.user.broadcastActivity({dragruler: dragruler});
               }
             }
-            this.layer.preview.removeChildren();
 
-            if (typeof this.data.flags["pick-up-stix"] == "undefined") {
-              const dragruler =
-                canvas.controls.dragRuler._state > 0
-                  ? canvas.controls.dragRuler.toJSON()
-                  : null;
-              canvas.controls.dragRuler.moveToken(dragShift);
-              canvas.controls.dragRuler._onMouseUp(event);
-              canvas.controls.dragRuler._endMeasurement();
-              canvas.controls.dragRuler._state = 0;
-              //canvas.controls.dragRuler.FTPUtility.traverse(0,0,0);
-            }
-            return false;
-          } else {
-            return wrapped.apply(this, [event]);
-          }
-        },
-        "MIXED"
+            return wrapped.apply(canvas.tokens.controlled[0], [event]);
+          },
+          'WRAPPER'
       );
 
       libWrapper.register(
-        VTT_MODULE_NAME,
-        "Token.prototype._onDragLeftCancel",
-        function (wrapped, event) {
-          event.stopPropagation();
-
-          return wrapped.apply(this, [event]);
-        },
-        "WRAPPER"
-      );
-
-      libWrapper.register(
-        VTT_MODULE_NAME,
-        "MouseInteractionManager.prototype._handleDragCancel",
-        function (wrapped, event) {
-          if (
-            typeof this.object.data != "undefined" &&
-            typeof this.object.data.flags["pick-up-stix"] == "undefined"
-          ) {
+          VTT_MODULE_NAME,
+          'Token.prototype._onDragLeftDrop',
+          function(wrapped, event) {
             if (
-              canvas.tokens.controlled.length > 0 &&
-              canvas.tokens.controlled[0].mouseInteractionManager.state == 3
+                game.settings.get(VTT_MODULE_NAME, 'enabled') &&
+                canvas.controls.dragRuler.active
             ) {
-              switch (event.button) {
-                case 0:
-                  wrapped.apply(this, [event]);
-                  break;
-                case 2:
-                  const point =
-                    canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
-                      canvas.tokens
-                    );
-                  if (!dragShift) {
-                    const center = canvas.grid.grid.getCenter(point.x, point.y);
-                    canvas.controls.dragRuler._addWaypoint(
-                      new PIXI.Point(center[0], center[1])
-                    );
-                  } else {
-                    canvas.controls.dragRuler._addWaypoint(
-                      new PIXI.Point(point.x, point.y)
-                    );
-                  }
+              for (let c of this.layer.preview.children) {
+                const o = c._original;
+                if (o) {
+                  o.data.locked = false;
+                  o.alpha = 1.0;
+                }
+              }
+              this.layer.preview.removeChildren();
 
-                  break;
-                default:
-                  wrapped.apply(this, [event]);
-                  break;
+              if (typeof this.data.flags['pick-up-stix'] == 'undefined') {
+                const dragruler =
+                    canvas.controls.dragRuler._state > 0
+                        ? canvas.controls.dragRuler.toJSON()
+                        : null;
+                canvas.controls.dragRuler.moveToken(dragShift);
+                canvas.controls.dragRuler._onMouseUp(event);
+                canvas.controls.dragRuler._endMeasurement();
+                canvas.controls.dragRuler._state = 0;
+                //canvas.controls.dragRuler.FTPUtility.traverse(0,0,0);
+              }
+              return false;
+            } else {
+              return wrapped.apply(this, [event]);
+            }
+          },
+          'MIXED'
+      );
+
+      libWrapper.register(
+          VTT_MODULE_NAME,
+          'Token.prototype._onDragLeftCancel',
+          function(wrapped, event) {
+            event.stopPropagation();
+
+            return wrapped.apply(this, [event]);
+          },
+          'WRAPPER'
+      );
+
+      libWrapper.register(
+          VTT_MODULE_NAME,
+          'MouseInteractionManager.prototype._handleDragCancel',
+          function(wrapped, event) {
+            if (
+                typeof this.object.data != 'undefined' &&
+                typeof this.object.data.flags['pick-up-stix'] == 'undefined'
+            ) {
+              if (
+                  canvas.tokens.controlled.length > 0 &&
+                  canvas.tokens.controlled[0].mouseInteractionManager.state == 3
+              ) {
+                switch (event.button) {
+                  case 0:
+                    wrapped.apply(this, [event]);
+                    break;
+                  case 2:
+                    const point =
+                        canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
+                            canvas.tokens
+                        );
+                    if (!dragShift) {
+                      const center = canvas.grid.grid.getCenter(point.x, point.y);
+                      canvas.controls.dragRuler._addWaypoint(
+                          new PIXI.Point(center[0], center[1])
+                      );
+                    } else {
+                      canvas.controls.dragRuler._addWaypoint(
+                          new PIXI.Point(point.x, point.y)
+                      );
+                    }
+
+                    break;
+                  default:
+                    wrapped.apply(this, [event]);
+                    break;
+                }
+              } else {
+                wrapped.apply(this, [event]);
               }
             } else {
               wrapped.apply(this, [event]);
             }
-          } else {
-            wrapped.apply(this, [event]);
-          }
-        },
-        "MIXED"
+          },
+          'MIXED'
       );
-			console.log(LOG_PREFIX + "Initialized");
+      console.log(LOG_PREFIX + 'Initialized');
     }
   }
 
-  Hooks.on("init", DragRuler.init);
-  Hooks.on("ready", () => {
-    if (!game.modules.get("lib-wrapper")?.active && game.user.isGM) {
+  Hooks.on('init', DragRuler.init);
+  Hooks.on('ready', () => {
+    if (!game.modules.get('lib-wrapper')?.active && game.user.isGM) {
       ui.notifications.error(
-        "Module " +
+          'Module ' +
           VTT_MODULE_CLASS +
-          " requires the 'libWrapper' module. Please install and activate it."
+          ' requires the \'libWrapper\' module. Please install and activate it.'
       );
     }
-    Object.defineProperty(canvas.controls, "dragRuler", {
+    Object.defineProperty(canvas.controls, 'dragRuler', {
       get() {
         return canvas.controls.getDragRulerForUser(game.user.id);
-      },
+      }
     });
     canvas.controls.dragRulers = null;
     canvas.controls._dragRulers = {};
     canvas.controls.drawDragRulers();
-    $("body").on("keydown", (e) => {
+    $('body').on('keydown', (e) => {
       switch (e.which) {
         case 17:
           ctrlPressed = true;
           if (
-            canvas.controls.dragRuler.active == false &&
-            e.originalEvent.location == 1 &&
-            !rangeFinder &&
-            canvas.tokens.controlled.length > 0 &&
-            game.settings.get(VTT_MODULE_NAME, "rangeFinder") === true &&
-            canvas.mouseInteractionManager.state != 0 &&
-            game.activeTool != "ruler"
+              canvas.controls.dragRuler.active == false &&
+              e.originalEvent.location == 1 &&
+              !rangeFinder &&
+              canvas.tokens.controlled.length > 0 &&
+              game.settings.get(VTT_MODULE_NAME, 'rangeFinder') === true &&
+              canvas.mouseInteractionManager.state != 0 &&
+              game.activeTool != 'ruler'
           ) {
             rangeFinder = true;
             canvas.controls.ruler._state = Ruler.STATES.MEASURING;
             canvas.controls.ruler._addWaypoint(
-              canvas.tokens.controlled[0].center
+                canvas.tokens.controlled[0].center
             );
             canvas.mouseInteractionManager.state =
-              canvas.mouseInteractionManager.states.DRAG;
+                canvas.mouseInteractionManager.states.DRAG;
             canvas.mouseInteractionManager._activateDragEvents();
             e.data = {
               originalEvent: e.originalEvent,
               origin: canvas.tokens.controlled[0].center,
               destination:
-                canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
-                  canvas.tokens
-                ),
+                  canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
+                      canvas.tokens
+                  )
             };
             canvas.controls.ruler._onMouseMove(e);
             canvas.mouseInteractionManager._dragRight = false;
@@ -738,15 +750,15 @@
         case 88:
           if (canvas.controls.dragRuler.waypoints.length > 1)
             canvas.controls.dragRuler._removeWaypoint(
-              canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
-                canvas.tokens
-              )
+                canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
+                    canvas.tokens
+                )
             );
           else if (canvas.controls.dragRuler.waypoints.length == 1) {
             canvas.controls.dragRuler._removeWaypoint(
-              canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
-                canvas.tokens
-              )
+                canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
+                    canvas.tokens
+                )
             );
             for (let c of canvas.tokens.controlled[0].layer.preview.children) {
               const o = c._original;
@@ -766,9 +778,9 @@
         case 80:
           if (canvas.controls.dragRuler.active) {
             canvas.controls.dragRuler._addWaypoint(
-              canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
-                canvas.tokens
-              )
+                canvas.app.renderer.plugins.interaction.mouse.getLocalPosition(
+                    canvas.tokens
+                )
             );
           }
           break;
@@ -796,7 +808,7 @@
           break;
       }
     });
-    $("body").on("keyup", (e) => {
+    $('body').on('keyup', (e) => {
       switch (e.which) {
         case 17:
           ctrlPressed = false;
@@ -805,13 +817,13 @@
             canvas.controls.ruler._endMeasurement();
             canvas.mouseInteractionManager._deactivateDragEvents();
             canvas.mouseInteractionManager.state =
-              canvas.mouseInteractionManager.states.HOVER;
+                canvas.mouseInteractionManager.states.HOVER;
           }
           break;
         case 18:
           altPressed = false;
           if (canvas.controls.dragRuler.active) {
-            game.user.broadcastActivity({ dragruler: null });
+            game.user.broadcastActivity({dragruler: null});
           }
           break;
         case 16:
@@ -821,18 +833,19 @@
           break;
       }
     });
-		console.log(LOG_PREFIX + "Ready");
+    console.log(LOG_PREFIX + 'Ready');
   });
-  Hooks.on("canvasReady", () => {
+  Hooks.on('canvasReady', () => {
     canvas.controls.dragRulers = null;
     canvas.controls._dragRulers = {};
     canvas.controls.drawDragRulers();
   });
-  Hooks.on("updateUser", (user, data, diff, id) => {
+  Hooks.on('updateUser', (user, data, diff, id) => {
     canvas.controls.getDragRulerForUser(data._id).color = colorStringToHex(
-      data.color
+        data.color
     );
   });
+
   /*function getSquaresInLine (start, end) {
    
     // Translate coordinates
@@ -911,8 +924,8 @@ function measureDistancesWithDifficultTerrain(segments) {
 			
 				
 
-			if(typeof canvas.terrain?.costGrid[y]?.[x] != 'undefined'){
-	    		let point = canvas.terrain.costGrid[y][x];
+			if(typeof canvas.terrain?.cost[y]?.[x] != 'undefined'){
+	    		let point = canvas.terrain.cost[y][x];
 	    		squares[i].dist = (point.multiple * gridDistance);
 	    		totalDistance += (point.multiple * gridDistance)
 	    	}else{
@@ -932,19 +945,19 @@ function measureDistancesWithDifficultTerrain(segments) {
 };*/
 
   function grid_line(
-    p0,
-    p1,
-    totalDistance = 0,
-    nDiagonals = 0,
-    ignoreTerrain = false
+      p0,
+      p1,
+      totalDistance = 0,
+      nDiagonals = 0,
+      ignoreTerrain = false
   ) {
     var dx = p1.col - p0.col,
-      dy = p1.row - p0.row;
+        dy = p1.row - p0.row;
 
     var nx = Math.abs(dx),
-      ny = Math.abs(dy);
+        ny = Math.abs(dy);
     var sign_x = dx > 0 ? 1 : -1,
-      sign_y = dy > 0 ? 1 : -1;
+        sign_y = dy > 0 ? 1 : -1;
     let N = Math.max(nx, ny);
     let divN = N == 0 ? 0.0 : 1.0 / N;
     let xStep = dx * divN;
@@ -954,7 +967,7 @@ function measureDistancesWithDifficultTerrain(segments) {
       col: p0.col,
       distance: 0,
       nDiagonals: 0,
-      travelled: 0,
+      travelled: 0
     };
     var points = [p];
 
@@ -970,8 +983,8 @@ function measureDistancesWithDifficultTerrain(segments) {
 
       let dist = canvas.dimensions.distance;
       if (
-        (game.system.id == "dnd5e" && canvas.grid.diagonalRule == "5105") ||
-        game.system.id == "pf2e"
+          (game.system.id == 'dnd5e' && canvas.grid.diagonalRule == '5105') ||
+          game.system.id == 'pf2e'
       ) {
         let dx2 = Math.abs(points[i].col - rCol);
         let dy2 = Math.abs(points[i].row - rRow);
@@ -985,10 +998,11 @@ function measureDistancesWithDifficultTerrain(segments) {
         }
       }
       if (
-        typeof canvas.terrain?.costGrid[rRow]?.[rCol] != "undefined" &&
-        !ignoreTerrain
+          typeof canvas.terrain?.cost[rRow]?.[rCol] != 'undefined' &&
+          !ignoreTerrain
+
       ) {
-        let point = canvas.terrain.costGrid[rRow][rCol];
+        let point = canvas.terrain.cost[rRow][rCol];
 
         dist = point.multiple * dist;
       }
@@ -998,49 +1012,61 @@ function measureDistancesWithDifficultTerrain(segments) {
         col: rCol,
         distance: dist,
         nDiagonals: nDiagonals,
-        travelled: travelled,
+        travelled: travelled
       });
     }
 
     return points;
   }
+
   class Hex {
     constructor(q, r, s) {
       this.q = q;
       this.r = r;
       this.s = s;
-      if (Math.round(q + r + s) !== 0) throw "q + r + s must be 0";
+      if (Math.round(q + r + s) !== 0) throw 'q + r + s must be 0';
     }
+
     add(b) {
       return new Hex(this.q + b.q, this.r + b.r, this.s + b.s);
     }
+
     subtract(b) {
       return new Hex(this.q - b.q, this.r - b.r, this.s - b.s);
     }
+
     scale(k) {
       return new Hex(this.q * k, this.r * k, this.s * k);
     }
+
     rotateLeft() {
       return new Hex(-this.s, -this.q, -this.r);
     }
+
     rotateRight() {
       return new Hex(-this.r, -this.s, -this.q);
     }
+
     static direction(direction) {
       return Hex.directions[direction];
     }
+
     neighbor(direction) {
       return this.add(Hex.direction(direction));
     }
+
     diagonalNeighbor(direction) {
       return this.add(Hex.diagonals[direction]);
     }
+
     len() {
       return (Math.abs(this.q) + Math.abs(this.r) + Math.abs(this.s)) / 2;
     }
+
     distance(b) {
       return this.subtract(b).len();
     }
+
     round() {
       var qi = Math.round(this.q);
       var ri = Math.round(this.r);
@@ -1057,13 +1083,15 @@ function measureDistancesWithDifficultTerrain(segments) {
       }
       return new Hex(qi, ri, si);
     }
+
     lerp(b, t) {
       return new Hex(
-        this.q * (1.0 - t) + b.q * t,
-        this.r * (1.0 - t) + b.r * t,
-        this.s * (1.0 - t) + b.s * t
+          this.q * (1.0 - t) + b.q * t,
+          this.r * (1.0 - t) + b.r * t,
+          this.s * (1.0 - t) + b.s * t
       );
     }
+
     linedraw(b, totalDistance = 0, ignoreTerrain = false) {
       var N = this.distance(b);
       var a_nudge = new Hex(this.q + 1e-6, this.r + 1e-6, this.s - 2e-6);
@@ -1078,11 +1106,12 @@ function measureDistancesWithDifficultTerrain(segments) {
         if (i == 0) dist = 0;
         else {
           if (
-            typeof canvas.terrain?.costGrid[grid.row]?.[grid.col] !=
-              "undefined" &&
-            !ignoreTerrain
+              typeof canvas.terrain?.cost[grid.row]?.[grid.col] !=
+              'undefined' &&
+              !ignoreTerrain
+
           ) {
-            let point = canvas.terrain.costGrid[grid.row][grid.col];
+            let point = canvas.terrain.cost[grid.row][grid.col];
             dist = point.multiple * dist;
           }
         }
@@ -1091,7 +1120,7 @@ function measureDistancesWithDifficultTerrain(segments) {
           row: grid.row,
           col: grid.col,
           distance: dist,
-          travelled: travelled,
+          travelled: travelled
         });
       }
       return results;
@@ -1103,6 +1132,7 @@ function measureDistancesWithDifficultTerrain(segments) {
       this.col = col;
       this.row = row;
     }
+
     static qoffsetFromCube(offset, h) {
       var col = h.q;
       var row = h.r + (h.q + offset * (h.q & 1)) / 2;
@@ -1111,6 +1141,7 @@ function measureDistancesWithDifficultTerrain(segments) {
       // }
       return new OffsetCoord(col, row);
     }
+
     static qoffsetToCube(offset, h) {
       var q = h.col;
       var r = h.row - (h.col + offset * (h.col & 1)) / 2;
@@ -1120,6 +1151,7 @@ function measureDistancesWithDifficultTerrain(segments) {
       // }
       return new Hex(q, r, s);
     }
+
     static rCubeToOffset(cube) {
       const offset = canvas.grid.grid.options.even ? 1 : -1;
       let row = cube.s; //cube.q + (cube.r + offset * (cube.r % 2)) / 2; // 1 + (-1 + -1 * (-1 % 2)) / 2 =
@@ -1127,8 +1159,9 @@ function measureDistancesWithDifficultTerrain(segments) {
       // if (offset !== OffsetCoord.EVEN && offset !== OffsetCoord.ODD) {
       //     throw "offset must be EVEN (+1) or ODD (-1)";
       // }
-      return { row, col };
+      return {row, col};
     }
+
     static rCoordToCube(row, col) {
       const offset = canvas.grid.grid.options.even ? 1 : -1;
       var q = col - (row + offset * (row & 1)) / 2;

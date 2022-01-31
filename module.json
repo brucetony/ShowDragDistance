@@ -5,9 +5,9 @@
   "authors": [
     { "name": "Will Saunders", "email": "willsaunders1014@gmail.com" }
   ],
-  "version": "2.3.0",
+  "version": "2.3.1",
   "minimumCoreVersion": "0.8.0",
-  "compatibleCoreVersion": "0.8.8",
+  "compatibleCoreVersion": "9",
   "esmodules": ["showdragdistance.js"],
   "dependencies": [
     {
@@ -31,8 +31,8 @@
       "path": "lang/es.json"
     }
   ],
-  "changelog": "https://raw.githubusercontent.com/wsaunders1014/ShowDragDistance/master/README.md",
-  "url": "https://github.com/wsaunders1014/ShowDragDistance",
-  "manifest": "https://raw.githubusercontent.com/wsaunders1014/ShowDragDistance/master/module.json",
-  "download": "https://github.com/wsaunders1014/ShowDragDistance/releases/download/2.2.3/ShowDragDistance.zip"
+  "changelog": "https://raw.githubusercontent.com/brucetony/ShowDragDistance/main/README.md",
+  "url": "https://github.com/brucetony/ShowDragDistance",
+  "manifest": "https://raw.githubusercontent.com/brucetony/ShowDragDistance/main/module.json",
+  "download": "https://github.com/brucetony/ShowDragDistance/releases/download/2.2.4/ShowDragDistance.zip"
 }

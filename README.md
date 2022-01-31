@@ -7,7 +7,12 @@ Rangefinder: With a single token selected, hold CTRL on the canvas and it will d
 New Settings:
 You can now point to where the speed or movement attribute is located on the actor sheet. For instance, for DnD5e it is `actor.data.data.attributes.speed.value`. You can also point to a bonus movement attribute if your system has one. In addition you can use `token.setFlag('ShowDragDistance','speed',{normal:0,dash:0})` to add any one time speed boosts via macro. The DragRuler also calls Hook.call('moveToken', token, dragRuler) when the token moves. Drag colors are configurable in client side settings if they are too close to player's color.
 
+# Disclaimer
+I (brucetony) am not the original or current maintainer of this module. I forked the applied changes from [749](https://github.com/749/ShowDragDistance) and edited the manifest so that it is easier to install. I have no intention of maintaining or supporting this module, I simply want to allow other to access and install the already applied changes. To use this (working) version of ShowDragDistance, do NOT install it directly from the marketplace, but instead use `https://raw.githubusercontent.com/brucetony/ShowDragDistance/main/module.json` in the Manifest URL box at the bottom of the `Install Module` box.
+
 # Changelog
+2.3.1 - Fork changes from https://github.com/749/ShowDragDistance and compile into installable manifest for version 9
+
 2.2.3 - Added PF2 support. Fixed shift dragging not working now.
 
 2.2.2 - Rebuilt the line drawing algorithms, Now works on hex grids again. Can now set `token.ignoreTerrain=true` to ignore difficult terrain.

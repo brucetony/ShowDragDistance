@@ -273,7 +273,7 @@
     }
 
     _addWaypoint(point) {
-      //const center = canvas.grid.getCenter(point.x, point.y);
+      // const center = canvas.grid.getCenter(point.x, point.y);
       this.waypoints.push(new PIXI.Point(point.x, point.y));
       this.labels.addChild(new PIXI.Text('', CONFIG.canvasTextStyle));
     }
@@ -612,7 +612,7 @@
                   o.alpha = 1.0;
                 }
               }
-              this.layer.preview.removeChildren();
+              // this.layer.preview.removeChildren();  # Causes names to duplicate
 
               if (typeof this.data.flags['pick-up-stix'] == 'undefined') {
                 const dragruler =

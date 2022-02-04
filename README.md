@@ -11,6 +11,8 @@ You can now point to where the speed or movement attribute is located on the act
 I (brucetony) am not the original or current maintainer of this module. I forked the applied changes from [749](https://github.com/749/ShowDragDistance) and edited the manifest so that it is easier to install. I have no intention of maintaining or supporting this module, I simply want to allow other to access and install the already applied changes. To use this (working) version of ShowDragDistance, do NOT install it directly from the marketplace, but instead use `https://raw.githubusercontent.com/brucetony/ShowDragDistance/main/module.json` in the Manifest URL box at the bottom of the `Install Module` box.
 
 # Changelog
+2.3.2 - Fix name duplication bug that appeared after v9
+
 2.3.1 - Fork changes from https://github.com/749/ShowDragDistance and compile into installable manifest for version 9
 
 2.2.3 - Added PF2 support. Fixed shift dragging not working now.
